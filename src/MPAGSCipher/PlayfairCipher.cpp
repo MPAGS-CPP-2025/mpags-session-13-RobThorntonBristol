@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <string>
-#include <iostream>
 
 /**
  * \file PlayfairCipher.cpp
@@ -101,9 +100,6 @@ std::string PlayfairCipher::applyCipher(const std::string& inputText,
     }
 
     outputText = result;
-    
-    std::cout << outputText << std::endl;
-
 
     std::string encrypted{};
 
