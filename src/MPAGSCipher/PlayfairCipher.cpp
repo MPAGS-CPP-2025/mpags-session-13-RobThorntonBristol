@@ -68,20 +68,72 @@ std::string PlayfairCipher::applyCipher(const std::string& inputText,
     std::string outputText{inputText};
 
     // Change J -> I
+    std::transform(std::begin(outputText), std::end(outputText), std::begin(outputText),
+                   [](char c) { return (c == 'J') ? 'I' : c; });
 
     // Find repeated characters and add an X (or a Q for repeated X's)
-
     // If the size of the input is odd, add a trailing Z
+    std::string result{};
+
+    for (size_t i = 0; i < outputText.length(); ) {
+        char first = outputText[i];
+        char second{};
+
+        if (i + 1 < outputText.length())
+            second = outputText[i + 1];
+        else
+            second = (first == 'Z') ? 'X' : 'Z';
+
+        if (first == second && first != 'X') {
+            result += first;
+            result += 'X';
+            i += 1;
+        } else if (first == second && first == 'X') {
+            result += first;
+            result += 'Q';
+            i += 1;
+        } else {
+            result += first;
+            result += second;
+            i += 2;
+        }
+    }
+
+    outputText = result;
+
+    std::string encrypted{};
 
     // Loop over the input bigrams
+    for (size_t i = 0; i < outputText.length(); i += 2) {
+        char a = outputText[i];
+        char b = outputText[i + 1];
 
-    // - Find the coordinates in the grid for each bigram
+        // - Find the coordinates in the grid for each bigram
+        auto [r1, c1] = charLookup_.at(a);
+        auto [r2, c2] = charLookup_.at(b);
 
-    // - Apply the rules to these coords to get new coords
+        // - Apply the rules to these coords to get new coords
+        if (r1 == r2) {
+            // Same row → shift right
+            c1 = (c1 + 1) % gridSize_;
+            c2 = (c2 + 1) % gridSize_;
+        } 
+        else if (c1 == c2) {
+            // Same column → shift down
+            r1 = (r1 + 1) % gridSize_;
+            r2 = (r2 + 1) % gridSize_;
+        } 
+        else {
+            // Rectangle → swap columns
+            std::swap(c1, c2);
+        }
 
-    // - Find the letters associated with the new coords
+        // - Find the letters associated with the new coords
+        encrypted += coordLookup_.at({r1, c1});
+        encrypted += coordLookup_.at({r2, c2});
+    }
 
-    // - Make the replacements
+    outputText = encrypted;
 
     // Return the output text
     return outputText;
